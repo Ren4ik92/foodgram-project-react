@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
+
 class MyUser(AbstractUser):
     USER_TYPE_CHOICES = [
         ('guest', 'Гость'),
@@ -56,3 +57,9 @@ class MyUser(AbstractUser):
 
     def __str__(self) -> str:
         return f'{self.username}: {self.email}'
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='subscriptions')
+    author = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='subscribers')
+    created_at = models.DateTimeField(auto_now_add=True)
