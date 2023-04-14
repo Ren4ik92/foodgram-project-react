@@ -38,6 +38,7 @@ class UserSerializer(ModelSerializer):
         )
         extra_kwargs = {'password': {'write_only': True}}
         read_only_fields = 'is_subscribed',
+        ref_name = "CustomUserSerializer"
 
     def get_is_subscribed(self, obj: User) -> bool:
         user = self.context.get('view').request.user

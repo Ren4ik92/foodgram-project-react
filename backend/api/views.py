@@ -1,15 +1,17 @@
+from datetime import datetime
 from urllib.parse import unquote
 
-from django.db.models import Q
+from django.db.models import Q, Sum
+from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.status import HTTP_401_UNAUTHORIZED
+from rest_framework.status import HTTP_401_UNAUTHORIZED, HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from .mixins import AddDelViewMixin
 from djoser.views import UserViewSet as DjoserUserViewSet
 from .paginators import PageLimitPagination
 from .serializers import *
-from recipes.models import Recipe, Tag, Ingredient, IngredientAmount
+from recipes.models import Recipe, Tag, Ingredient, IngredientAmount, Carts, Favorites
 from users.models import Subscription
 from .permissions import *
 from core.enums import UrlQueries, Tuples
@@ -81,3 +83,99 @@ class IngredientViewSet(ReadOnlyModelViewSet):
             queryset = start_queryset
 
         return queryset
+
+
+class RecipeViewSet(ModelViewSet, AddDelViewMixin):
+    """Работает с рецептами.
+    Вывод, создание, редактирование, добавление/удаление
+    в избранное и список покупок.
+    Отправка текстового файла со списком покупок.
+    Для авторизованных пользователей — возможность добавить
+    рецепт в избранное и в список покупок.
+    Изменять рецепт может только автор или админы.
+    """
+    queryset = Recipe.objects.select_related('author')
+    serializer_class = RecipeSerializer
+    permission_classes = (AuthorStaffOrReadOnly,)
+    pagination_class = PageLimitPagination
+    add_serializer = ShortRecipeSerializer
+
+    def get_queryset(self):
+
+        queryset = self.queryset
+
+        tags: list = self.request.query_params.getlist(UrlQueries.TAGS.value)
+        if tags:
+            queryset = queryset.filter(
+                tags__slug__in=tags).distinct()
+
+        author: str = self.request.query_params.get(UrlQueries.AUTHOR.value)
+        if author:
+            queryset = queryset.filter(author=author)
+
+        if self.request.user.is_anonymous:
+            return queryset
+
+        is_in_cart: str = self.request.query_params.get(UrlQueries.SHOP_CART)
+        if is_in_cart in Tuples.SYMBOL_TRUE_SEARCH.value:
+            queryset = queryset.filter(in_carts__user=self.request.user)
+        elif is_in_cart in Tuples.SYMBOL_FALSE_SEARCH.value:
+            queryset = queryset.exclude(in_carts__user=self.request.user)
+
+        is_favorit: str = self.request.query_params.get(UrlQueries.FAVORITE)
+        if is_favorit in Tuples.SYMBOL_TRUE_SEARCH.value:
+            queryset = queryset.filter(in_favorites__user=self.request.user)
+        if is_favorit in Tuples.SYMBOL_FALSE_SEARCH.value:
+            queryset = queryset.exclude(in_favorites__user=self.request.user)
+        return queryset
+
+    @action(
+        methods=Tuples.ACTION_METHODS,
+        detail=True,
+        permission_classes=(IsAuthenticated,)
+    )
+    def favorite(self, request: WSGIRequest, pk: int | str) -> Response:
+
+        return self._add_del_obj(pk, Favorites, Q(recipe__id=pk))
+
+    @action(
+        methods=Tuples.ACTION_METHODS,
+        detail=True,
+        permission_classes=(IsAuthenticated,)
+    )
+    def shopping_cart(self, request: WSGIRequest, pk: int | str) -> Response:
+
+        return self._add_del_obj(pk, Carts, Q(recipe__id=pk))
+
+    @action(methods=('get',), detail=False)
+    def download_shopping_cart(self, request: WSGIRequest):
+
+        user = self.request.user
+        if not user.carts.exists():
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+        filename = f'{user.username}_shopping_list.txt'
+        shopping_list = [
+            f'Список покупок для:\n\n{user.first_name}\n'
+            f'{datetime.now().strftime("%d/%m/%Y %H:%M")}\n'
+        ]
+
+        ingredients = Ingredient.objects.filter(
+            recipe__recipe__in_carts__user=user
+        ).values(
+            'name',
+            measurement=F('measurement_unit')
+        ).annotate(amount=Sum('recipe__amount'))
+
+        for ing in ingredients:
+            shopping_list.append(
+                f'{ing["name"]}: {ing["amount"]} {ing["measurement"]}'
+            )
+
+        shopping_list.append('\nПосчитано в Foodgram')
+        shopping_list = '\n'.join(shopping_list)
+        response = HttpResponse(
+            shopping_list, content_type='text.txt; charset=utf-8'
+        )
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+        return

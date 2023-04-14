@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import ForeignKey, UniqueConstraint, CASCADE,  DateTimeField
+from django.db.models import ForeignKey, UniqueConstraint, CASCADE, DateTimeField, SET_NULL
 
 User = get_user_model()
 
@@ -9,13 +9,32 @@ class Recipe(models.Model):
     """Модель для рецептов.
         Основная модель приложения описывающая рецепты.
         """
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recipes')
+    name = models.CharField(
+        verbose_name='Название блюда',
+        max_length=60,
+        default=''
+    )
+    author = ForeignKey(
+        verbose_name='Автор рецепта',
+        related_name='recipes',
+        to=User,
+        on_delete=SET_NULL,
+        null=True,
+    )
     title = models.CharField(max_length=100)
     image = models.ImageField(upload_to='recipe_images/', null=True, blank=True)
     description = models.TextField()
     ingredients = models.ManyToManyField('Ingredient', through='IngredientAmount')
     tags = models.ManyToManyField('Tag')
-    cooking_time = models.PositiveIntegerField()
+    text = models.TextField(
+        verbose_name='Описание блюда',
+        max_length=200,
+        default=''
+    )
+    cooking_time = models.PositiveSmallIntegerField(
+        verbose_name='Время приготовления',
+        default=0,
+    )
 
     def __str__(self):
         return self.title
