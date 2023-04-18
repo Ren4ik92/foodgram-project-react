@@ -7,7 +7,6 @@ import django.utils.timezone
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -20,18 +19,32 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
-                ('is_superuser', models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')),
-                ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
-                ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
+                ('is_superuser', models.BooleanField(default=False,
+                                                     help_text='Designates that this user has all permissions without explicitly assigning them.',
+                                                     verbose_name='superuser status')),
+                ('is_staff', models.BooleanField(default=False,
+                                                 help_text='Designates whether the user can log into this admin site.',
+                                                 verbose_name='staff status')),
+                ('is_active', models.BooleanField(default=True,
+                                                  help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.',
+                                                  verbose_name='active')),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
-                ('user_type', models.CharField(choices=[('guest', 'Гость'), ('user', 'Авторизованный пользователь'), ('admin', 'Администратор')], default='guest', max_length=10)),
+                ('user_type', models.CharField(
+                    choices=[('guest', 'Гость'), ('user', 'Авторизованный пользователь'), ('admin', 'Администратор')],
+                    default='guest', max_length=10)),
                 ('username', models.CharField(max_length=150, unique=True, verbose_name='Уникальный юзернейм')),
                 ('first_name', models.CharField(max_length=50, verbose_name='Имя')),
                 ('last_name', models.CharField(max_length=50, verbose_name='Фамилия')),
                 ('email', models.EmailField(max_length=128, unique=True, verbose_name='Адрес электронной почты')),
                 ('password', models.CharField(max_length=128, verbose_name='Пароль')),
-                ('groups', models.ManyToManyField(blank=True, help_text='Группы, к которым принадлежит этот пользователь. Пользователь получит все разрешения, предоставленные каждой из его групп.', related_name='myuser_set', related_query_name='user', to='auth.group', verbose_name='Группы')),
-                ('user_permissions', models.ManyToManyField(blank=True, help_text='Определенные разрешения для этого пользователя.', related_name='myuser_set', related_query_name='user', to='auth.permission', verbose_name='User permissions')),
+                ('groups', models.ManyToManyField(blank=True,
+                                                  help_text='Группы, к которым принадлежит этот пользователь. Пользователь получит все разрешения, предоставленные каждой из его групп.',
+                                                  related_name='myuser_set', related_query_name='user', to='auth.group',
+                                                  verbose_name='Группы')),
+                ('user_permissions',
+                 models.ManyToManyField(blank=True, help_text='Определенные разрешения для этого пользователя.',
+                                        related_name='myuser_set', related_query_name='user', to='auth.permission',
+                                        verbose_name='User permissions')),
             ],
             options={
                 'verbose_name': 'Пользователь',
@@ -47,8 +60,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='subscribers', to='users.myuser')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='subscriptions', to='users.myuser')),
+                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='subscribers',
+                                             to='users.myuser')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='subscriptions',
+                                           to='users.myuser')),
             ],
         ),
     ]
