@@ -20,9 +20,12 @@ class Recipe(models.Model):
         null=True,
     )
     title = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='recipe_images/', null=True, blank=True)
+    image = models.ImageField(upload_to='recipe_images/',
+                              null=True, blank=True)
     description = models.TextField()
-    ingredients = models.ManyToManyField('Ingredient', through='IngredientAmount', related_name='recipes')
+    ingredients = models.ManyToManyField('Ingredient',
+                                         through='IngredientAmount',
+                                         related_name='recipes')
     tags = models.ManyToManyField('Tag')
     text = models.TextField(
         verbose_name='Описание блюда',

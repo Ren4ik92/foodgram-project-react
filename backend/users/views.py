@@ -11,14 +11,17 @@ from recipes.models import Recipe
 @permission_classes([IsAuthenticated])
 def subscribe(request, author_id):
     author = MyUser.objects.get(id=author_id)
-    subscription,\
-        created = Subscription.objects.get_or_create(user=request.user, author=author)
+    subscription, \
+        created = Subscription.objects.get_or_create(
+        user=request.user, author=author)
     if created:
         return Response({'success': True,
-                         'message': f'Вы успешно подписались на {author.username}'})
+                         'message': f'Вы успешно подписались на'
+                                    f' {author.username}'})
     else:
         return Response({'success': False,
-                         'message': f'Вы уже подписаны на {author.username}'})
+                         'message': f'Вы уже подписаны на'
+                                    f' {author.username}'})
 
 
 @api_view(['POST'])
@@ -26,7 +29,8 @@ def subscribe(request, author_id):
 def unsubscribe(request, author_id):
     author = MyUser.objects.get(id=author_id)
     Subscription.objects.filter(user=request.user, author=author).delete()
-    return Response({'success': True, 'message': f'Вы успешно отписались от {author.username}'})
+    return Response({'success': True, 'message': f'Вы успешно отписались от '
+                                                 f'{author.username}'})
 
 
 @api_view(['GET'])
