@@ -11,7 +11,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from core.enums import Tuples, UrlQueries
-from recipes.models import (Carts, Favorites, Ingredient, IngredientAmount,
+from recipes.models import (Carts, Favorites, Ingredient,
                             Recipe, Tag)
 from users.models import Subscription
 
