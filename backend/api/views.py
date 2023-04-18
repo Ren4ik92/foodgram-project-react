@@ -1,16 +1,17 @@
 from datetime import datetime
 from urllib.parse import unquote
 
-from core.enums import Tuples, UrlQueries
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
-from recipes.models import (Carts, Favorites, Ingredient, IngredientAmount,
-                            Recipe, Tag)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+
+from core.enums import Tuples, UrlQueries
+from recipes.models import (Carts, Favorites, Ingredient, IngredientAmount,
+                            Recipe, Tag)
 from users.models import Subscription
 
 from .mixins import AddDelViewMixin

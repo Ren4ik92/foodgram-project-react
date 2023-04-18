@@ -3,10 +3,11 @@ from collections import OrderedDict
 from django.contrib.auth import get_user_model
 from django.db.models import F, QuerySet
 from django.db.transaction import atomic
-from recipes.models import Ingredient, IngredientAmount, Recipe, Tag
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import ModelSerializer
+
+from recipes.models import Ingredient, IngredientAmount, Recipe, Tag
 
 User = get_user_model()
 

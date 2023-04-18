@@ -1,9 +1,10 @@
-from api.serializers import RecipeSerializer
 from models import MyUser, Subscription
-from recipes.models import Recipe
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from api.serializers import RecipeSerializer
+from recipes.models import Recipe
 
 
 @api_view(['POST'])
