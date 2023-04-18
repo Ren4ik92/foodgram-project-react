@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import ForeignKey, UniqueConstraint, CASCADE, DateTimeField, SET_NULL
+from django.db.models import (CASCADE, SET_NULL, DateTimeField, ForeignKey,
+                              UniqueConstraint)
 
 User = get_user_model()
 

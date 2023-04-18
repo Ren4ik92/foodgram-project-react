@@ -1,20 +1,22 @@
 from datetime import datetime
 from urllib.parse import unquote
 
+from core.enums import Tuples, UrlQueries
 from django.db.models import Q, Sum
 from django.http import HttpResponse
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework.status import HTTP_401_UNAUTHORIZED, HTTP_400_BAD_REQUEST
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from .mixins import AddDelViewMixin
 from djoser.views import UserViewSet as DjoserUserViewSet
-from .paginators import PageLimitPagination
-from .serializers import *
-from recipes.models import Recipe, Tag, Ingredient, IngredientAmount, Carts, Favorites
+from recipes.models import (Carts, Favorites, Ingredient, IngredientAmount,
+                            Recipe, Tag)
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from users.models import Subscription
+
+from .mixins import AddDelViewMixin
+from .paginators import PageLimitPagination
 from .permissions import *
-from core.enums import UrlQueries, Tuples
+from .serializers import *
 
 
 class UserViewSet(DjoserUserViewSet, AddDelViewMixin):

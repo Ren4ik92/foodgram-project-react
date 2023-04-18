@@ -1,6 +1,6 @@
 from django.contrib.auth.hashers import make_password
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class MyUser(AbstractUser):
@@ -10,7 +10,9 @@ class MyUser(AbstractUser):
         ('admin', 'Администратор')
     ]
 
-    user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='guest')
+    user_type = models.CharField(max_length=10,
+                                 choices=USER_TYPE_CHOICES,
+                                 default='guest')
 
     username = models.CharField(verbose_name='Уникальный юзернейм',
                                 max_length=150, unique=True
@@ -30,7 +32,9 @@ class MyUser(AbstractUser):
         'auth.Group',
         verbose_name='Группы',
         blank=True,
-        help_text='Группы, к которым принадлежит этот пользователь. Пользователь получит все разрешения, предоставленные каждой из его групп.',
+        help_text='Группы, к которым принадлежит этот пользователь.'
+                  ' Пользователь получит все разрешения,'
+                  ' предоставленные каждой из его групп.',
         related_name='myuser_set',  # add a custom related_name
         related_query_name='user'
     )
@@ -59,6 +63,10 @@ class MyUser(AbstractUser):
 
 
 class Subscription(models.Model):
-    user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='subscriptions')
-    author = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='subscribers')
+    user = models.ForeignKey(MyUser,
+                             on_delete=models.CASCADE,
+                             related_name='subscriptions')
+    author = models.ForeignKey(MyUser,
+                               on_delete=models.CASCADE,
+                               related_name='subscribers')
     created_at = models.DateTimeField(auto_now_add=True)
