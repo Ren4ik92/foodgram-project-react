@@ -23,6 +23,7 @@ jobs:
 #          python -m flake8
 #          cd backend/  # путь к директории с бэкендом
 
+
   build_and_push_backend_to_docker_hub:
     name: Build and Push Backend Docker image to Docker Hub
     runs-on: ubuntu-latest
