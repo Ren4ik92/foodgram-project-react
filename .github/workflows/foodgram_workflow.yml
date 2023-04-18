@@ -1,34 +1,32 @@
-name: Django-app workflow
+name: foogram
 
-on:
-  push:
-    paths-ignore:
-      - '**/README.md'
+on: [ push ]
 
 jobs:
   tests:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.10.10
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.10.10
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pep8-naming flake8-broken-line flake8-return flake8-isort
-        pip install -r backend/requirements.txt
-    - name: Test with flake8
-      run: |
-        python -m flake8 backend
-  build_and_push_to_docker_hub:
-    name: Push Docker image to Docker Hub
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip 
+          pip install flake8 pep8-naming flake8-broken-line flake8-return flake8-isort
+          pip install -r requirements.txt
+#      - name: Test with flake8
+#        run: |
+#          python -m flake8
+#          cd backend/  # путь к директории с бэкендом
+
+  build_and_push_backend_to_docker_hub:
+    name: Build and Push Backend Docker image to Docker Hub
     runs-on: ubuntu-latest
     needs: tests
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -39,18 +37,38 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Push to Docker Hub
+      - name: Build and Push Backend Docker image
         uses: docker/build-push-action@v2
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
+          context: ./backend/  # путь к директории с бэкендом
+          tags: ren4ik92/foodgram-backend:latest
+
+  build_and_push_frontend_to_docker_hub:
+    name: Build and Push Frontend Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+        - name: Check out the repo
+          uses: actions/checkout@v2
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v1
+        - name: Login to Docker
+          uses: docker/login-action@v1
+          with:
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_PASSWORD }}
+        - name: Build and Push frontend Docker image
+          uses: docker/build-push-action@v2
+          with:
+            push: true
+            context: ./frontend/  # путь к директории с бэкендом
+            tags: ren4ik92/foodgram-frontend:latest
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build_and_push_to_docker_hub
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    needs: [ build_and_push_backend_to_docker_hub, build_and_push_frontend_to_docker_hub ]
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
@@ -59,17 +77,15 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram_backend
             sudo docker-compose stop
             sudo docker-compose rm backend
             rm .env
+            sudo docker pull ren4ik92/foodgram-backend:latest
+            sudo docker pull ren4ik92/foodgram-frontend:latest
             touch .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             echo DB_NAME=${{ secrets.DB_NAME }} >> .env
             echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
             echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
-            echo DB_HOST=${{ secrets.DB_HOST }} >> .env
-            echo DB_PORT=${{ secrets.DB_PORT }} >> .env
-            echo DJ_SECRET_KEY=${{ secrets.DJ_SECRET_KEY }} >> .env
+            echo DB_HOST=${{ secrets.DB_HOST }}
             sudo docker-compose up -d
