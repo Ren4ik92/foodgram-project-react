@@ -6,9 +6,6 @@ User = get_user_model()
 
 
 class Recipe(models.Model):
-    """Модель для рецептов.
-        Основная модель приложения описывающая рецепты.
-        """
     name = models.CharField(
         verbose_name='Название блюда',
         max_length=60,
@@ -24,7 +21,7 @@ class Recipe(models.Model):
     title = models.CharField(max_length=100)
     image = models.ImageField(upload_to='recipe_images/', null=True, blank=True)
     description = models.TextField()
-    ingredients = models.ManyToManyField('Ingredient', through='IngredientAmount')
+    ingredients = models.ManyToManyField('Ingredient', through='IngredientAmount', related_name='recipes')
     tags = models.ManyToManyField('Tag')
     text = models.TextField(
         verbose_name='Описание блюда',
@@ -73,10 +70,18 @@ class Ingredient(models.Model):
 
 
 class IngredientAmount(models.Model):
-    """Количество ингредиентов в блюде."""
-
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    recipe = ForeignKey(
+        verbose_name='В каких рецептах',
+        related_name='ingredient_amounts',
+        to=Recipe,
+        on_delete=CASCADE,
+    )
+    ingredient = ForeignKey(
+        verbose_name='Связанные ингредиенты',
+        related_name='ingredient_amounts',
+        to=Ingredient,
+        on_delete=CASCADE,
+    )
     amount = models.FloatField()
     unit = models.CharField(max_length=50)
 
