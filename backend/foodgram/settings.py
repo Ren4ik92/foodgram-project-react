@@ -1,16 +1,28 @@
-import os
+from pathlib import Path
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from decouple import Csv, config
 
-SECRET_KEY = os.environ.get('DJ_SECRET_KEY'),
+DATE_TIME_FORMAT = '%d/%m/%Y %H:%M'
 
-DEBUG = False
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['*']
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SECRET_KEY = config('SECRET_KEY', default='string_from_.env')
+
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*', cast=Csv())
+
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://localhost, http://127.0.0.1',
+    cast=Csv()
+)
+
+ROOT_URLCONF = 'foodgram.urls'
+
+WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 INSTALLED_APPS = [
-    'api',
-    'users',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -20,22 +32,21 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
-    'corsheaders',
     'django_filters',
+    'api.apps.ApiConfig',
+    'recipes.apps.RecipesConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-ROOT_URLCONF = 'foodgram.urls'
 
 TEMPLATES = [
     {
@@ -53,74 +64,88 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'foodgram.wsgi.application'
-
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
-        'NAME': os.getenv('DB_NAME', default='postgres'),
-        'USER': os.getenv('POSTGRES_USER', default='postgres'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
-        'HOST': os.getenv('DB_HOST', default='db'),
-        'PORT': os.getenv('DB_PORT', default='5432')
+        'ENGINE': config(
+            'DB_ENGINE', default='django.db.backends.postgresql'),
+        'NAME': config(
+            'DB_NAME', default='postgres'),
+        'USER': config(
+            'POSTGRES_USER', default='postgres'),
+        'PASSWORD': config(
+            'POSTGRES_PASSWORD', default='password'),
+        'HOST': config(
+            'DB_HOST', default='127.0.0.1'),
+        'PORT': config(
+            'DB_PORT', default=5432, cast=int)
     }
 }
 
+AUTH_USER_MODEL = 'users.MyUser'
+
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator', },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', },
 ]
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
-
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_URLS_REGEX = r'^/api/.*$'
-
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-    ),
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend'],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES':
+        ['rest_framework.authentication.TokenAuthentication', ],
+
+    'DEFAULT_PERMISSION_CLASSES':
+        ['rest_framework.permissions.IsAuthenticatedOrReadOnly', ],
 }
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
-    'SERIALIZERS': {
-        'user_create': 'users.serializers.CustomUserCreateSerializer',
-        'user': 'users.serializers.CustomUserSerializer',
-        'current_user': 'users.serializers.CustomUserSerializer',
-    },
     'PERMISSIONS': {
-        'user': ('rest_framework.permissions.IsAuthenticated',),
-        'user_list': ('rest_framework.permissions.AllowAny',)
-    }
+        'resipe': ('api.permissions.AuthorStaffOrReadOnly,',),
+        'recipe_list': ('api.permissions.AuthorStaffOrReadOnly',),
+        'user': ('api.permissions.OwnerUserOrReadOnly',),
+        'user_list': ('api.permissions.OwnerUserOrReadOnly',),
+    },
+    'SERIALIZERS': {
+        'user': 'api.serializers.UserSerializer',
+        'user_list': 'api.serializers.UserSerializer',
+        'current_user': 'api.serializers.UserSerializer',
+        'user_create': 'api.serializers.UserSerializer',
+    },
+}
+
+LANGUAGE_CODE = 'ru'
+TIME_ZONE = 'UTC'
+USE_I18N = True
+USE_TZ = True
+
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'static'
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / MEDIA_URL
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+PASSWORD_RESET_TIMEOUT = 60 * 60  # 1 hour
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'level': 'DEBUG' if DEBUG else 'ERROR',
+            'handlers': ['console', ],
+        },
+    },
 }
