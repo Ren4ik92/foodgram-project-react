@@ -1,7 +1,6 @@
-FROM python:3.10.10
-WORKDIR /app
+FROM python:3.8.5
+WORKDIR /code
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
 COPY . .
-RUN pip3 install -r /app/requirements.txt --no-cache-dir
-RUN pip3 install gunicorn
-CMD ["gunicorn", "backend.wsgi:application", "--bind", "0:8000"]
-LABEL author='Belotserkovets Mikhail' version=1.0.0
+CMD gunicorn foodgram.wsgi:application --bind 0.0.0.0:8000

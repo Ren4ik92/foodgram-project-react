@@ -1,43 +1,66 @@
-from models import MyUser, Subscription
-from rest_framework.decorators import api_view, permission_classes
+from django.contrib.auth import get_user_model
+from djoser.views import UserViewSet
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.serializers import RecipeSerializer
-from recipes.models import Recipe
+from api.pagination import LimitPageNumberPagination
+from api.serializers import FollowSerializer
+from users.models import Follow
+
+User = get_user_model()
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def subscribe(request, author_id):
-    author = MyUser.objects.get(id=author_id)
-    subscription, \
-        created = Subscription.objects.get_or_create(
-        user=request.user, author=author)
-    if created:
-        return Response({'success': True,
-                         'message': f'Вы успешно подписались на'
-                                    f' {author.username}'})
-    else:
-        return Response({'success': False,
-                         'message': f'Вы уже подписаны на'
-                                    f' {author.username}'})
+class CustomUserViewSet(UserViewSet):
+    pagination_class = LimitPageNumberPagination
 
+    @action(detail=True, permission_classes=[IsAuthenticated])
+    def subscribe(self, request, id=None):
+        user = request.user
+        author = get_object_or_404(User, id=id)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def unsubscribe(request, author_id):
-    author = MyUser.objects.get(id=author_id)
-    Subscription.objects.filter(user=request.user, author=author).delete()
-    return Response({'success': True, 'message': f'Вы успешно отписались от '
-                                                 f'{author.username}'})
+        if user == author:
+            return Response({
+                'errors': 'Вы не можете подписываться на самого себя'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        if Follow.objects.filter(user=user, author=author).exists():
+            return Response({
+                'errors': 'Вы уже подписаны на данного пользователя'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
+        follow = Follow.objects.create(user=user, author=author)
+        serializer = FollowSerializer(
+            follow, context={'request': request}
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def my_subscriptions(request):
-    subscriptions = Subscription.objects.filter(user=request.user)
-    authors = [subscription.author for subscription in subscriptions]
-    recipes = Recipe.objects.filter(author__in=authors).order_by('-created_at')
-    serializer = RecipeSerializer(recipes, many=True)
-    return Response(serializer.data)
+    @subscribe.mapping.delete
+    def del_subscribe(self, request, id=None):
+        user = request.user
+        author = get_object_or_404(User, id=id)
+        if user == author:
+            return Response({
+                'errors': 'Вы не можете отписываться от самого себя'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        follow = Follow.objects.filter(user=user, author=author)
+        if follow.exists():
+            follow.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response({
+            'errors': 'Вы уже отписались'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, permission_classes=[IsAuthenticated])
+    def subscriptions(self, request):
+        user = request.user
+        queryset = Follow.objects.filter(user=user)
+        pages = self.paginate_queryset(queryset)
+        serializer = FollowSerializer(
+            pages,
+            many=True,
+            context={'request': request}
+        )
+        return self.get_paginated_response(serializer.data)

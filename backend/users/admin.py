@@ -1,12 +1,5 @@
 from django.contrib import admin
 
-from .models import MyUser
+from users.models import Follow
 
-
-class MyUserAdmin(admin.ModelAdmin):
-    list_display = ('user_type', 'username',
-                    'first_name', 'last_name',
-                    'email', 'password')
-
-
-admin.site.register(MyUser, MyUserAdmin)
+admin.site.register(Follow)
