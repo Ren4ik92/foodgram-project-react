@@ -1,5 +1,3 @@
-"""Настройки параметров.
-"""
 from enum import Enum, IntEnum
 
 

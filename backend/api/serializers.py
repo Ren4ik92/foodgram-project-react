@@ -1,25 +1,19 @@
-# импорты из стандартной библиотеки
 from collections import OrderedDict
 
-# импорты сторонних библиотек
 from django.contrib.auth import get_user_model
 from django.db.models import F, QuerySet
 from django.db.transaction import atomic
-from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework.fields import SerializerMethodField
+from rest_framework.serializers import ModelSerializer
 
-# импорты модулей текущего проекта
-from core.services import recipe_amount_ingredients_set
-from core.validators import ingredients_exist_validator, tags_exist_validator
-from recipes.models import Ingredient, Recipe, Tag
+from recipes.models import Ingredient, IngredientAmount, Recipe, Tag
 
 User = get_user_model()
 
 
 class ShortRecipeSerializer(ModelSerializer):
-    """Сериализатор для модели Recipe.
-    Определён укороченный набор полей для некоторых эндпоинтов.
+    """Укороченный Сериализатор для модели Recipe.
     """
 
     class Meta:
@@ -46,6 +40,7 @@ class UserSerializer(ModelSerializer):
         )
         extra_kwargs = {'password': {'write_only': True}}
         read_only_fields = 'is_subscribed',
+        ref_name = "CustomUserSerializer"
 
     def get_is_subscribed(self, obj: User) -> bool:
         user = self.context.get('view').request.user
@@ -103,7 +98,7 @@ class TagSerializer(ModelSerializer):
         fields = '__all__'
         read_only_fields = '__all__',
 
-    def validate(self, data: OrderedDict) -> OrderedDict:
+    def validate(self, data: OrderedDict):
         for attr, value in data.items():
             data[attr] = value.sttrip(' #').upper()
 
@@ -111,7 +106,7 @@ class TagSerializer(ModelSerializer):
 
 
 class IngredientSerializer(ModelSerializer):
-    """Сериализатор для вывода ингридиентов.
+    """Сериализатор для вывода ингредиентов.
     """
 
     class Meta:
@@ -125,10 +120,10 @@ class RecipeSerializer(ModelSerializer):
     """
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
-    ingredients = SerializerMethodField()
+    ingredients = IngredientSerializer(many=True, read_only=True)
     is_favorited = SerializerMethodField()
     is_in_shopping_cart = SerializerMethodField()
-    image = Base64ImageField()
+    image = serializers.ImageField()
 
     class Meta:
         model = Recipe
@@ -150,12 +145,10 @@ class RecipeSerializer(ModelSerializer):
         )
 
     def get_ingredients(self, recipe: Recipe) -> QuerySet[dict]:
-
         return recipe.ingredients.values(
             'id', 'name', 'measurement_unit', amount=F('recipe__amount'))
 
     def get_is_favorited(self, recipe: Recipe) -> bool:
-
         user = self.context.get('view').request.user
 
         if user.is_anonymous:
@@ -172,31 +165,13 @@ class RecipeSerializer(ModelSerializer):
 
         return user.carts.filter(recipe=recipe).exists()
 
-    def validate(self, data: OrderedDict) -> OrderedDict:
-        tags_ids: list[int] = self.initial_data.get('tags')
-        ingredients: list[dict] = self.initial_data.get('ingredients')
-
-        if not tags_ids or not ingredients:
-            raise serializers.ValidationError('Недостаточно данных.')
-
-        tags_exist_validator(tags_ids, Tag)
-        ingredients = ingredients_exist_validator(ingredients, Ingredient)
-
-        data.update({
-            'tags': tags_ids,
-            'ingredients': ingredients,
-            'author': self.context.get('request').user
-        })
-        return data
-
     @atomic
     def create(self, validated_data: dict) -> Recipe:
 
         tags: list[int] = validated_data.pop('tags')
-        ingredients: dict[int, tuple] = validated_data.pop('ingredients')
+        ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        recipe_amount_ingredients_set(recipe, ingredients)
         return recipe
 
     @atomic
@@ -215,7 +190,7 @@ class RecipeSerializer(ModelSerializer):
 
         if ingredients:
             recipe.ingredients.clear()
-            recipe_amount_ingredients_set(recipe, ingredients)
+            recipe.ingredients.set(ingredients)
 
         recipe.save()
         return recipe

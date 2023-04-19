@@ -1,27 +1,21 @@
 import os
 from pathlib import Path
 
-from decouple import Csv, config
-
-DATE_TIME_FORMAT = '%d/%m/%Y %H:%M'
-
-DEBUG = config('DEBUG', default=False, cast=bool)
-
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY', default='string_from_.env')
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*', cast=Csv())
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'django-insecure-!q6_e7v*co+i844@5jrfc!bhl^l-tzv$i5f9_v*j(j-2&5qib5'
 
-CSRF_TRUSTED_ORIGINS = config(
-    'CSRF_TRUSTED_ORIGINS',
-    default='http://localhost, http://127.0.0.1',
-    cast=Csv()
-)
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
 
-ROOT_URLCONF = 'foodgram.urls'
+ALLOWED_HOSTS = []
 
-WSGI_APPLICATION = 'foodgram.wsgi.application'
+# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -31,12 +25,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken',
     'djoser',
-    'django_filters',
-    'api.apps.ApiConfig',
-    'recipes.apps.RecipesConfig',
-    'users.apps.UsersConfig',
+    'rest_framework.authtoken',
+    'corsheaders',
+    'recipes',
+    'drf_yasg',
+    'users',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -44,10 +39,23 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1",
+    "http://localhost:3000",
+    "http://localhost",
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_URLS_REGEX = r'^/api/.*$'
+
+ROOT_URLCONF = 'foodgram.urls'
 
 TEMPLATES = [
     {
@@ -65,6 +73,11 @@ TEMPLATES = [
     },
 ]
 
+WSGI_APPLICATION = 'foodgram.wsgi.application'
+
+# Database
+# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
+
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
@@ -76,20 +89,62 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = 'users.MyUser'
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+
+# AUTH_USER_MODEL = 'users.MyUser'
+
+# Password validation
+# https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', },
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator', },
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', },
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
 ]
 
+# Internationalization
+# https://docs.djangoproject.com/en/4.1/topics/i18n/
+
+LANGUAGE_CODE = 'en-us'
+
+TIME_ZONE = 'UTC'
+
+USE_I18N = True
+
+USE_TZ = True
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/4.1/howto/static-files/
+
+STATIC_URL = '/static_backend/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 6,
     'DEFAULT_AUTHENTICATION_CLASSES':
         ['rest_framework.authentication.TokenAuthentication', ],
 
@@ -111,36 +166,5 @@ DJOSER = {
         'user_list': 'api.serializers.UserSerializer',
         'current_user': 'api.serializers.UserSerializer',
         'user_create': 'api.serializers.UserSerializer',
-    },
-}
-
-LANGUAGE_CODE = 'ru'
-TIME_ZONE = 'UTC'
-USE_I18N = True
-USE_TZ = True
-
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static'
-
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / MEDIA_URL
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-PASSWORD_RESET_TIMEOUT = 60 * 60  # 1 hour
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django.db.backends': {
-            'level': 'DEBUG' if DEBUG else 'ERROR',
-            'handlers': ['console', ],
-        },
     },
 }

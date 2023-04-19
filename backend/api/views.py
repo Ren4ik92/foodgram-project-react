@@ -1,47 +1,31 @@
-# импорты сторонних библиотек
-from datetime import datetime as dt
+from datetime import datetime
 from urllib.parse import unquote
-
-# импорты сторонних библиотек
-from django.contrib.auth import get_user_model
+from rest_framework.permissions import DjangoModelPermissions
 from django.core.handlers.wsgi import WSGIRequest
-from django.db.models import F, Q, QuerySet, Sum
-from django.http.response import HttpResponse
+from django.db.models import F, Q, Sum
+from django.http import HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.routers import APIRootView
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-# импорты модулей текущего проекта
-from api.mixins import AddDelViewMixin
-from api.paginators import PageLimitPagination
-from api.permissions import (AdminOrReadOnly, AuthorStaffOrReadOnly,
-                             DjangoModelPermissions, IsAuthenticated)
-from api.serializers import (IngredientSerializer, RecipeSerializer,
-                             ShortRecipeSerializer, TagSerializer,
-                             UserSubscribeSerializer)
 from core.enums import Tuples, UrlQueries
-from core.services import incorrect_layout
-from recipes.models import Carts, Favorites, Ingredient, Recipe, Tag
-from users.models import Subscriptions
-from foodgram.settings import DATE_TIME_FORMAT
+from recipes.models import (Carts, Favorites, Ingredient,
+                            Recipe, Tag)
+from users.models import Subscription
 
-User = get_user_model()
-
-
-class BaseAPIRootView(APIRootView):
-    """Базовые пути API приложения.
-    """
+from .mixins import AddDelViewMixin
+from .paginators import PageLimitPagination
+from .permissions import (AdminOrReadOnly, AuthorStaffOrReadOnly,
+                          IsAuthenticated)
+from .serializers import (IngredientSerializer, RecipeSerializer,
+                          ShortRecipeSerializer, TagSerializer,
+                          UserSubscribeSerializer)
 
 
 class UserViewSet(DjoserUserViewSet, AddDelViewMixin):
-    """Работает с пользователями.
-
-    ViewSet для работы с пользователми - вывод таковых,
-    регистрация.
-    Для авторизованных пользователей —
+    """Для авторизованных пользователей —
     возможность подписаться на автора рецепта.
     """
     pagination_class = PageLimitPagination
@@ -53,11 +37,11 @@ class UserViewSet(DjoserUserViewSet, AddDelViewMixin):
         detail=True,
         permission_classes=(IsAuthenticated,)
     )
-    def subscribe(self, request: WSGIRequest, id: int | str) -> Response:
-        return self._add_del_obj(id, Subscriptions, Q(author__id=id))
+    def subscribe(self, request: WSGIRequest, id: int | str):
+        return self._add_del_obj(id, Subscription, Q(author__id=id))
 
     @action(methods=('get',), detail=False)
-    def subscriptions(self, request: WSGIRequest) -> Response:
+    def subscriptions(self, request: WSGIRequest):
         if self.request.user.is_anonymous:
             return Response(status=HTTP_401_UNAUTHORIZED)
 
@@ -70,7 +54,6 @@ class UserViewSet(DjoserUserViewSet, AddDelViewMixin):
 
 class TagViewSet(ReadOnlyModelViewSet):
     """Работает с тэгами.
-
     Изменение и создание тэгов разрешено только админам.
     """
     queryset = Tag.objects.all()
@@ -80,14 +63,13 @@ class TagViewSet(ReadOnlyModelViewSet):
 
 class IngredientViewSet(ReadOnlyModelViewSet):
     """Работет с игридиентами.
-
     Изменение и создание ингридиентов разрешено только админам.
     """
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)
 
-    def get_queryset(self) -> list[Ingredient]:
+    def get_queryset(self):
 
         name: str = self.request.query_params.get(UrlQueries.SEARCH_ING_NAME)
         queryset = self.queryset
@@ -96,7 +78,7 @@ class IngredientViewSet(ReadOnlyModelViewSet):
             if name[0] == '%':
                 name = unquote(name)
             else:
-                name = name.translate(incorrect_layout)
+                name = name.translate()
 
             name = name.lower()
             start_queryset = list(queryset.filter(name__istartswith=name))
@@ -112,7 +94,6 @@ class IngredientViewSet(ReadOnlyModelViewSet):
 
 class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     """Работает с рецептами.
-
     Вывод, создание, редактирование, добавление/удаление
     в избранное и список покупок.
     Отправка текстового файла со списком покупок.
@@ -126,7 +107,7 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     pagination_class = PageLimitPagination
     add_serializer = ShortRecipeSerializer
 
-    def get_queryset(self) -> QuerySet[Recipe]:
+    def get_queryset(self):
 
         queryset = self.queryset
 
@@ -139,7 +120,6 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         if author:
             queryset = queryset.filter(author=author)
 
-        # Следующие фильтры только для авторизованного пользователя
         if self.request.user.is_anonymous:
             return queryset
 
@@ -175,7 +155,7 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         return self._add_del_obj(pk, Carts, Q(recipe__id=pk))
 
     @action(methods=('get',), detail=False)
-    def download_shopping_cart(self, request: WSGIRequest) -> Response:
+    def download_shopping_cart(self, request: WSGIRequest):
 
         user = self.request.user
         if not user.carts.exists():
@@ -184,7 +164,7 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         filename = f'{user.username}_shopping_list.txt'
         shopping_list = [
             f'Список покупок для:\n\n{user.first_name}\n'
-            f'{dt.now().strftime(DATE_TIME_FORMAT)}\n'
+            f'{datetime.now().strftime("%d/%m/%Y %H:%M")}\n'
         ]
 
         ingredients = Ingredient.objects.filter(
@@ -205,4 +185,4 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
             shopping_list, content_type='text.txt; charset=utf-8'
         )
         response['Content-Disposition'] = f'attachment; filename={filename}'
-        return response
+        return
