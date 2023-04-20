@@ -16,6 +16,7 @@ from api.pagination import LimitPageNumberPagination
 from api.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
 from api.serializers import (CropRecipeSerializer, IngredientSerializer,
                              RecipeSerializer, TagSerializer)
+from users.serializers import CustomUserCreateSerializer
 
 
 class TagsViewSet(ReadOnlyModelViewSet):
@@ -39,6 +40,35 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = LimitPageNumberPagination
     filter_class = AuthorAndTagFilter
     permission_classes = [IsOwnerOrReadOnly]
+
+    @action(detail=True, methods=['post'])
+    def add_to_favorites(self, request, pk=None):
+        recipe = self.get_object()
+        user = request.user
+
+        if Favorite.objects.filter(user=user, recipe=recipe).exists():
+            return Response({
+                'errors': 'Рецепт уже добавлен в избранное'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        favorite = Favorite.objects.create(user=user, recipe=recipe)
+        serializer = CustomUserCreateSerializer(user, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['delete'])
+    def remove_from_favorites(self, request, pk=None):
+        recipe = self.get_object()
+        user = request.user
+
+        favorite = Favorite.objects.filter(user=user, recipe=recipe)
+        if not favorite.exists():
+            return Response({
+                'errors': 'Рецепт не найден в избранном'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        favorite.delete()
+        serializer = CustomUserCreateSerializer(user, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
