@@ -20,6 +20,7 @@ from api.serializers import (CropRecipeSerializer, IngredientSerializer,
 
 class TagsViewSet(ReadOnlyModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = None
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
