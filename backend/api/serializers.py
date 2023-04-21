@@ -94,10 +94,19 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         image = validated_data.pop('image')
         ingredients_data = validated_data.pop('ingredients')
 <<<<<<< HEAD
+<<<<<<< HEAD
         recipe = Recipe.objects.create(**validated_data)
         tags_data = self.initial_data.get('tags')
 =======
         tags_data = validated_data.pop('tags')  # Извлекаем теги из validated_data
+=======
+        tags_data = validated_data.pop('tags')  # Извлекаем теги из validated_data
+
+        recipe = Recipe.objects.create(image=image, **validated_data)
+        recipe.tags.set(tags_data)
+
+        self.create_ingredients(ingredients_data, recipe)
+>>>>>>> parent of 77cf17a (final fix srial)
 
         recipe = Recipe.objects.create(image=image, **validated_data)
 >>>>>>> parent of 77cf17a (final fix srial)
@@ -141,6 +150,9 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')  # Извлекаем ингредиенты и теги из validated_data
 
+<<<<<<< HEAD
+>>>>>>> parent of 77cf17a (final fix srial)
+=======
 >>>>>>> parent of 77cf17a (final fix srial)
         instance.image = validated_data.get('image', instance.image)
         instance.name = validated_data.get('name', instance.name)
