@@ -25,3 +25,4 @@ urlpatterns = [
     path('recipes/<int:pk>/remove_from_favorites/', RecipeViewSet.as_view({'delete': 'remove_from_favorites'}),
          name='recipe-remove-from-favorites'),
 ]
+
