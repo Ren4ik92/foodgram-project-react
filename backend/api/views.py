@@ -15,7 +15,7 @@ from api.models import (Cart, Favorite, Ingredient, IngredientAmount, Recipe,
 from api.pagination import LimitPageNumberPagination
 from api.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
 from api.serializers import (CropRecipeSerializer, IngredientSerializer,
-                             RecipeSerializer, TagSerializer)
+                             RecipeCreateSerializer, RecipeReadSerializer, TagSerializer)
 from users.serializers import CustomUserCreateSerializer
 
 
@@ -36,7 +36,7 @@ class IngredientsViewSet(ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+    serializer_class = RecipeCreateSerializer
     pagination_class = LimitPageNumberPagination
     filter_class = AuthorAndTagFilter
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -101,7 +101,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     'errors': 'Рецепт уже добавлен в список'
                 }, status=status.HTTP_400_BAD_REQUEST)
             Cart.objects.create(user=request.user, recipe=recipe)
-            serializer = CropRecipeSerializer(recipe)
+            serializer = RecipeReadSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         elif request.method == 'DELETE':
             obj = Cart.objects.filter(user=request.user, recipe=recipe)
