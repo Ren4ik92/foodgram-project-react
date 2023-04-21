@@ -21,15 +21,14 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientAmountSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='ingredient.id')
+
+    ingredient = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all(), write_only=True)
     name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit'
-    )
+    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
 
     class Meta:
         model = IngredientAmount
-        fields = ('id', 'name', 'measurement_unit', 'amount')
+        fields = ('ingredient', 'name', 'measurement_unit', 'amount')
         validators = [
             UniqueTogetherValidator(
                 queryset=IngredientAmount.objects.all(),
