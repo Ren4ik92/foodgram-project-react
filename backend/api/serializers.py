@@ -128,13 +128,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         IngredientAmount.objects.bulk_create(ingredient_amounts)
 
     def create(self, validated_data):
-        image = validated_data.pop('image')
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')  # Извлекаем теги из validated_data
-
-        recipe = Recipe.objects.create(image=image, **validated_data)
+        recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags_data)
-
         self.create_ingredients(ingredients_data, recipe)
 
         return recipe
@@ -142,7 +139,6 @@ class RecipeSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')  # Извлекаем ингредиенты и теги из validated_data
-
         instance.image = validated_data.get('image', instance.image)
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
