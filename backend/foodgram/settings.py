@@ -65,7 +65,12 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', default='5432')
     }
 }
-
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -125,3 +130,4 @@ DJOSER = {
         'user_list': ('rest_framework.permissions.AllowAny',)
     }
 }
+

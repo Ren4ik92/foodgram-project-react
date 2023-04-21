@@ -15,7 +15,7 @@ from api.models import (Cart, Favorite, Ingredient, IngredientAmount, Recipe,
 from api.pagination import LimitPageNumberPagination
 from api.permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
 from api.serializers import (CropRecipeSerializer, IngredientSerializer,
-                             RecipeCreateSerializer, RecipeReadSerializer, TagSerializer)
+                             RecipeSerializer, TagSerializer)
 from users.serializers import CustomUserCreateSerializer
 
 
@@ -36,10 +36,39 @@ class IngredientsViewSet(ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeCreateSerializer
+    serializer_class = RecipeSerializer
     pagination_class = LimitPageNumberPagination
     filter_class = AuthorAndTagFilter
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+    # @action(detail=True, methods=['post'])
+    # def add_to_favorites(self, request, pk=None):
+    #     recipe = self.get_object()
+    #     user = request.user
+    #
+    #     if Favorite.objects.filter(user=user, recipe=recipe).exists():
+    #         return Response({
+    #             'errors': 'Рецепт уже добавлен в избранное'
+    #         }, status=status.HTTP_400_BAD_REQUEST)
+    #
+    #     favorite = Favorite.objects.create(user=user, recipe=recipe)
+    #     serializer = CustomUserCreateSerializer(user, context={'request': request})
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    # @action(detail=True, methods=['delete'])
+    # def remove_from_favorites(self, request, pk=None):
+    #     recipe = self.get_object()
+    #     user = request.user
+    #
+    #     favorite = Favorite.objects.filter(user=user, recipe=recipe)
+    #     if not favorite.exists():
+    #         return Response({
+    #             'errors': 'Рецепт не найден в избранном'
+    #         }, status=status.HTTP_400_BAD_REQUEST)
+    #
+    #     favorite.delete()
+    #     serializer = CustomUserCreateSerializer(user, context={'request': request})
+    #     return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -53,6 +82,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return self.delete_obj(Favorite, request.user, pk)
         return None
 
+    # @action(detail=True, methods=['post', 'delete'],
+    #         permission_classes=[IsAuthenticated])
+    # def shopping_cart(self, request, pk=None):
+    #     if request.method == 'POST':
+    #         return self.add_obj(Cart, request.user, pk)
+    #     elif request.method == 'DELETE':
+    #         return self.delete_obj(Cart, request.user, pk)
+    #     elif request.method == 'POST':
+    #         return self.add_to_cart(request, pk)
+    #     return None
     @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         recipe = self.get_object()
@@ -62,7 +101,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     'errors': 'Рецепт уже добавлен в список'
                 }, status=status.HTTP_400_BAD_REQUEST)
             Cart.objects.create(user=request.user, recipe=recipe)
-            serializer = RecipeReadSerializer(recipe)
+            serializer = CropRecipeSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         elif request.method == 'DELETE':
             obj = Cart.objects.filter(user=request.user, recipe=recipe)
@@ -73,6 +112,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'errors': 'Рецепт уже удален'
             }, status=status.HTTP_400_BAD_REQUEST)
         return None
+
+
+    # @action(detail=True, methods=['post', 'get', 'delete'],
+    #         permission_classes=[IsAuthenticated])
+    # def add_to_cart(self, request, pk):
+    #     if Cart.objects.filter(user=request.user, recipe__id=pk).exists():
+    #         return Response({
+    #             'errors': 'Рецепт уже добавлен в список'
+    #         }, status=status.HTTP_400_BAD_REQUEST)
+    #     recipe = get_object_or_404(Recipe, id=pk)
+    #     Cart.objects.create(user=request.user, recipe=recipe)
+    #     serializer = CropRecipeSerializer(recipe)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthenticated])
@@ -127,3 +179,4 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response({
             'errors': 'Рецепт уже удален'
         }, status=status.HTTP_400_BAD_REQUEST)
+
