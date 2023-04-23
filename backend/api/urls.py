@@ -14,15 +14,4 @@ router.register('recipes', RecipeViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    # path(
-    #     'users/<int:id>/subscribe/',
-    #     CustomUserViewSet.as_view({'post': 'subscribe', 'delete': 'del_subscribe'}),
-    #     name='subscribe'),
-    # path('recipes/<int:pk>/shopping_cart/',
-    #      RecipeViewSet.as_view({'post': 'shopping_cart'}), name='recipe-shopping-cart'),
-    # path('recipes/<int:pk>/add_to_favorites/', RecipeViewSet.as_view({'post': 'favorite'}),
-    #      name='recipe-add-to-favorites'),
-    # path('recipes/<int:pk>/remove_from_favorites/', RecipeViewSet.as_view({'delete': 'remove_from_favorites'}),
-    #      name='recipe-remove-from-favorites'),
 ]
-

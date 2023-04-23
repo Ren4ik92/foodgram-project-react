@@ -55,23 +55,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
-        recipe = self.get_object()
         if request.method == 'POST':
-            if Cart.objects.filter(user=request.user, recipe=recipe).exists():
-                return Response({
-                    'errors': 'Рецепт уже добавлен в список'
-                }, status=status.HTTP_400_BAD_REQUEST)
-            Cart.objects.create(user=request.user, recipe=recipe)
-            serializer = CropRecipeSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return self.add_obj(Cart, request.user, pk)
         elif request.method == 'DELETE':
-            obj = Cart.objects.filter(user=request.user, recipe=recipe)
-            if obj.exists():
-                obj.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response({
-                'errors': 'Рецепт уже удален'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return self.delete_obj(Cart, request.user, pk)
         return None
 
     @action(detail=False, methods=['get'],
