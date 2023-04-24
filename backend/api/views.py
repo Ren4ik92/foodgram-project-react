@@ -65,20 +65,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
-        # final_list = {}
-        # ingredients = IngredientAmount.objects.filter(
-        #     recipe__cart__user=request.user).values_list(
-        #     'ingredient__name', 'ingredient__measurement_unit',
-        #     'amount')
-        # for item in ingredients:
-        #     name = item[0]
-        #     if name not in final_list:
-        #         final_list[name] = {
-        #             'measurement_unit': item[1],
-        #             'amount': item[2]
-        #         }
-        #     else:
-        #         final_list[name]['amount'] += item[2]
         final_list = IngredientAmount.objects.filter(
             recipe__cart__user=request.user
         ).values(
@@ -96,9 +82,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         page.drawString(200, 800, 'Список ингредиентов')
         page.setFont('Slimamif', size=16)
         height = 750
-        for i, (name, data) in enumerate(final_list.items(), 1):
-            page.drawString(75, height, (f'<{i}> {name} - {data["amount"]}, '
-                                         f'{data["measurement_unit"]}'))
+        for i, data in enumerate(final_list, 1):
+            name = data['ingredient__name']
+            amount = data['amount']
+            measurement_unit = data['ingredient__measurement_unit']
+            page.drawString(75, height, (f'<{i}> {name} - {amount}, '
+                                         f'{measurement_unit}'))
             height -= 25
         page.showPage()
         page.save()
