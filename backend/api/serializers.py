@@ -1,4 +1,3 @@
-from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
@@ -35,12 +34,6 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
                 fields=['ingredient', 'recipe']
             )
         ]
-
-    def validate(self, attrs):
-        ingredient = attrs.get('ingredient')
-        amount = attrs.get('amount')
-
-        return attrs
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -95,7 +88,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
-        tags_data = validated_data.pop('tags')  # Извлекаем теги из validated_data
+        tags_data = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags_data)
         self.create_ingredients(ingredients_data, recipe)
@@ -104,7 +97,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients')
-        tags_data = validated_data.pop('tags')  # Извлекаем ингредиенты и теги из validated_data
+        tags_data = validated_data.pop('tags')
         instance.tags.clear()
         instance.tags.set(tags_data)
 
