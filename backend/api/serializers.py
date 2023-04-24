@@ -21,7 +21,8 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientAmountSerializer(serializers.ModelSerializer):
-    ingredient = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all(), write_only=True)
+    ingredient_id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all(),
+                                                       write_only=True, source='ingredient')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
 
@@ -38,9 +39,6 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         ingredient = attrs.get('ingredient')
         amount = attrs.get('amount')
-
-        if amount <= 0:
-            raise serializers.ValidationError('Убедитесь, что значение количества ингредиента больше 0')
 
         return attrs
 
@@ -74,12 +72,15 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return Recipe.objects.filter(cart__user=user, id=obj.id).exists()
 
-    def validate(self, data):
-        ingredients = data.get('ingredients')
-
-        data['ingredients'] = self.validate_ingredients(ingredients)
-
-        return data
+    def validate_ingredients(self, ingredients):
+        validated_ingredients = []
+        for ingredient in ingredients:
+            serializer = IngredientAmountSerializer(data=ingredient)
+            if serializer.is_valid():
+                validated_ingredients.append(serializer.validated_data)
+            else:
+                raise serializers.ValidationError(serializer.errors)
+        return validated_ingredients
 
     def create_ingredients(self, ingredients, recipe):
         ingredient_amounts = [
@@ -104,10 +105,6 @@ class RecipeSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')  # Извлекаем ингредиенты и теги из validated_data
-        instance.image = validated_data.get('image', instance.image)
-        instance.name = validated_data.get('name', instance.name)
-        instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
         instance.tags.clear()
         instance.tags.set(tags_data)
 
