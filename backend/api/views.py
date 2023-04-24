@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from reportlab.pdfbase import pdfmetrics
@@ -64,20 +65,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
-        final_list = {}
-        ingredients = IngredientAmount.objects.filter(
-            recipe__cart__user=request.user).values_list(
-            'ingredient__name', 'ingredient__measurement_unit',
-            'amount')
-        for item in ingredients:
-            name = item[0]
-            if name not in final_list:
-                final_list[name] = {
-                    'measurement_unit': item[1],
-                    'amount': item[2]
-                }
-            else:
-                final_list[name]['amount'] += item[2]
+        # final_list = {}
+        # ingredients = IngredientAmount.objects.filter(
+        #     recipe__cart__user=request.user).values_list(
+        #     'ingredient__name', 'ingredient__measurement_unit',
+        #     'amount')
+        # for item in ingredients:
+        #     name = item[0]
+        #     if name not in final_list:
+        #         final_list[name] = {
+        #             'measurement_unit': item[1],
+        #             'amount': item[2]
+        #         }
+        #     else:
+        #         final_list[name]['amount'] += item[2]
+        final_list = IngredientAmount.objects.filter(
+            recipe__cart__user=request.user
+        ).values(
+            'ingredient__name', 'ingredient__measurement_unit'
+        ).annotate(
+            amount=Sum('amount')
+        )
         pdfmetrics.registerFont(
             TTFont('Slimamif', 'Slimamif.ttf', 'UTF-8'))
         response = HttpResponse(content_type='application/pdf')
