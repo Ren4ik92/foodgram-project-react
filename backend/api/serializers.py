@@ -66,13 +66,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         return Recipe.objects.filter(cart__user=user, id=obj.id).exists()
 
     def validate_ingredients(self, ingredients):
+        if not ingredients:
+            raise serializers.ValidationError("Список ингредиентов не может быть пустым.")
         validated_ingredients = []
-        for ingredient in ingredients:
-            serializer = IngredientAmountSerializer(data=ingredient)
-            if serializer.is_valid():
-                validated_ingredients.append(serializer.validated_data)
-            else:
-                raise serializers.ValidationError(serializer.errors)
+        serializer = IngredientAmountSerializer(data=ingredients)
+        if serializer.is_valid():
+            validated_ingredients.append(serializer.validated_data)
+        else:
+            raise serializers.ValidationError(serializer.errors)
         return validated_ingredients
 
     def create_ingredients(self, ingredients, recipe):
