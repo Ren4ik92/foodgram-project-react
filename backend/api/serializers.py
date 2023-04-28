@@ -44,7 +44,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = IngredientAmountSerializer(
-        source='ingredientamount_set',
+        # source='ingredientamount_set',
+        source='ingredients',
         many=True,
     )
     is_favorited = serializers.SerializerMethodField()
