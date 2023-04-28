@@ -1,6 +1,5 @@
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
-from rest_framework.fields import SerializerMethodField
 from rest_framework.validators import UniqueTogetherValidator
 
 from api.models import Ingredient, IngredientAmount, Recipe, Tag
@@ -48,7 +47,9 @@ class RecipeSerializer(serializers.ModelSerializer):
     #     # source='ingredientamount_set',
     #     many=True,
     # )
-    ingredients = SerializerMethodField()
+    ingredients = IngredientAmountSerializer(
+        many=True,
+    )
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
