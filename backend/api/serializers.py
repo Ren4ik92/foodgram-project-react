@@ -68,24 +68,11 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return Recipe.objects.filter(cart__user=user, id=obj.id).exists()
 
-    # def validate_ingredients(self, ingredients):
-    #     ingredients_list = []
-    #     if not ingredients:
-    #         raise serializers.ValidationError("Список ингредиентов не может быть пустым.")
-    #     for ingredient in ingredients:
-    #         if ingredient['id'] in ingredients_list:
-    #             raise serializers.ValidationError(
-    #                 'Ингредиенты должны быть уникальны.')
-    #         ingredients_list.append(ingredient['id'])
-    #     return ingredients
     def validate_ingredients(self, ingredients):
         ingredients_list = []
         if not ingredients:
             raise serializers.ValidationError("Список ингредиентов не может быть пустым.")
         for ingredient in ingredients:
-            if 'id' not in ingredient:
-                raise serializers.ValidationError(
-                    'Указан неверный формат ингредиента.')
             if ingredient['id'] in ingredients_list:
                 raise serializers.ValidationError(
                     'Ингредиенты должны быть уникальны.')
