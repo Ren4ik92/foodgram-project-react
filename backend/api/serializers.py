@@ -30,7 +30,7 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = IngredientAmount
-        fields = ('id', 'name', 'measurement_unit', 'amount', 'ingredient')
+        fields = ('id', 'name', 'measurement_unit', 'amount',)
         validators = [
             UniqueTogetherValidator(
                 queryset=IngredientAmount.objects.all(),
@@ -56,10 +56,6 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'is_in_shopping_cart', 'name', 'image', 'text',
                   'cooking_time')
 
-    # class Meta:
-    #     model = Recipe
-    #     fields = '__all__'
-    #     read_only_fields = ('id', 'author')
 
     def get_is_favorited(self, obj):
         user = self.context.get('request').user
@@ -101,19 +97,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags_data)
         self.create_ingredients(ingredients_data, recipe)
-
         return recipe
 
-    # def create(self, validated_data):
-    #     ingredients_data = validated_data.pop('ingredients')
-    #     recipe = Recipe.objects.create(**validated_data)
-    #     for ingredient_data in ingredients_data:
-    #         IngredientAmount.objects.create(
-    #             recipe=recipe,
-    #             ingredient_id=ingredient_data['ingredient'],
-    #             amount=ingredient_data['amount']
-    #         )
-    #     return recipe
 
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients')
