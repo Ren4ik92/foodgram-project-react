@@ -90,13 +90,21 @@ class RecipeSerializer(serializers.ModelSerializer):
         ]
         IngredientAmount.objects.bulk_create(ingredient_amounts)
 
+    # def create(self, validated_data):
+    #     ingredients_data = validated_data.pop('ingredients')
+    #     tags_data = validated_data.pop('tags')
+    #     recipe = Recipe.objects.create(**validated_data)
+    #     recipe.tags.set(tags_data)
+    #     self.create_ingredients(ingredients_data, recipe)
+    #
+    #     return recipe
+
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
-        tags_data = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
-        recipe.tags.set(tags_data)
-        self.create_ingredients(ingredients_data, recipe)
-
+        for ingredient_data in ingredients_data:
+            ingredient = ingredient_data.pop('ingredient')
+            IngredientAmount.objects.create(recipe=recipe, ingredient=ingredient, **ingredient_data)
         return recipe
 
     def update(self, instance, validated_data):
