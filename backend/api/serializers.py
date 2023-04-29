@@ -56,6 +56,9 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'is_in_shopping_cart', 'name', 'image', 'text',
                   'cooking_time')
 
+    def get_ingredients(self, obj):
+        return IngredientAmountSerializer(obj.ingredientamount_set.all(), many=True).data
+
     def get_is_favorited(self, obj):
         user = self.context.get('request').user
         if user.is_anonymous:
@@ -99,11 +102,13 @@ class RecipeSerializer(serializers.ModelSerializer):
     #     return recipe
 
     def create(self, validated_data):
-        ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
+        ingredients_data = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags_data)
-        self.create_ingredients(ingredients_data, recipe)
+        IngredientAmount.objects.bulk_create([
+            IngredientAmount(recipe=recipe, **ingredient_data) for ingredient_data in ingredients_data
+        ])
         return recipe
 
     def update(self, instance, validated_data):
