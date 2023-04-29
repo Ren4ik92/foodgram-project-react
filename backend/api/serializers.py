@@ -10,7 +10,7 @@ from users.serializers import CustomUserSerializer
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = '__all__'
+        fields = ('id', 'name')
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -19,28 +19,10 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-# class IngredientAmountSerializer(serializers.ModelSerializer):
-#     id = serializers.PrimaryKeyRelatedField(
-#         queryset=Ingredient.objects.all(),
-#         write_only=True,
-#         source='ingredient'
-#     )
-#     name = serializers.ReadOnlyField(source='ingredient.name')
-#     measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
-#
-#     class Meta:
-#         model = IngredientAmount
-#         fields = ('id', 'name', 'measurement_unit', 'amount', 'ingredient')
-#         validators = [
-#             UniqueTogetherValidator(
-#                 queryset=IngredientAmount.objects.all(),
-#                 fields=['ingredient', 'recipe']
-#             )
-#         ]
 class IngredientAmountSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(),
-        write_only=False,
+        write_only=True,
         source='ingredient'
     )
     name = serializers.ReadOnlyField(source='ingredient.name')
@@ -48,16 +30,13 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = IngredientAmount
-        fields = ('id', 'name', 'measurement_unit', 'amount', 'ingredient')
+        fields = ('id', 'name', 'measurement_unit', 'amount',)
         validators = [
             UniqueTogetherValidator(
                 queryset=IngredientAmount.objects.all(),
                 fields=['ingredient', 'recipe']
             )
         ]
-        extra_kwargs = {
-            'ingredient': {'required': True}
-        }
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -76,7 +55,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
                   'is_in_shopping_cart', 'name', 'image', 'text',
                   'cooking_time')
-
 
     def get_is_favorited(self, obj):
         user = self.context.get('request').user
