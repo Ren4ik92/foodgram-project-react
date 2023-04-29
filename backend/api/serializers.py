@@ -19,10 +19,28 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+# class IngredientAmountSerializer(serializers.ModelSerializer):
+#     id = serializers.PrimaryKeyRelatedField(
+#         queryset=Ingredient.objects.all(),
+#         write_only=True,
+#         source='ingredient'
+#     )
+#     name = serializers.ReadOnlyField(source='ingredient.name')
+#     measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
+#
+#     class Meta:
+#         model = IngredientAmount
+#         fields = ('id', 'name', 'measurement_unit', 'amount', 'ingredient')
+#         validators = [
+#             UniqueTogetherValidator(
+#                 queryset=IngredientAmount.objects.all(),
+#                 fields=['ingredient', 'recipe']
+#             )
+#         ]
 class IngredientAmountSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(),
-        write_only=True,
+        write_only=False,
         source='ingredient'
     )
     name = serializers.ReadOnlyField(source='ingredient.name')
@@ -37,6 +55,9 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
                 fields=['ingredient', 'recipe']
             )
         ]
+        extra_kwargs = {
+            'ingredient': {'required': True}
+        }
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -91,6 +112,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         ]
         IngredientAmount.objects.bulk_create(ingredient_amounts)
 
+    # def create(self, validated_data):
+    #     ingredients_data = validated_data.pop('ingredients')
+    #     tags_data = validated_data.pop('tags')
+    #     recipe = Recipe.objects.create(**validated_data)
+    #     recipe.tags.set(tags_data)
+    #     self.create_ingredients(ingredients_data, recipe)
+    #     return recipe
+
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
@@ -98,7 +127,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe.tags.set(tags_data)
         self.create_ingredients(ingredients_data, recipe)
         return recipe
-
 
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients')
