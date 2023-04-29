@@ -19,34 +19,24 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-# class IngredientAmountSerializer(serializers.ModelSerializer):
-#     id = serializers.PrimaryKeyRelatedField(
-#         queryset=Ingredient.objects.all(),
-#         write_only=True,
-#         source='ingredient'
-#     )
-#     name = serializers.ReadOnlyField(source='ingredient.name')
-#     measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
-#
-#     class Meta:
-#         model = IngredientAmount
-#         fields = ('id', 'name', 'measurement_unit', 'amount', 'ingredient')
-#         validators = [
-#             UniqueTogetherValidator(
-#                 queryset=IngredientAmount.objects.all(),
-#                 fields=['ingredient', 'recipe']
-#             )
-#         ]
-class IngredientAmountSerializer(serializers.Serializer):
-    id = serializers.IntegerField(source='ingredient.id')
-    name = serializers.CharField(source='ingredient.name', read_only=True)
-    measurement_unit = serializers.CharField(source='ingredient.measurement_unit', read_only=True)
-    amount = serializers.CharField()
+class IngredientAmountSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all(),
+        write_only=True,
+        source='ingredient'
+    )
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
 
-    def create(self, validated_data):
-        ingredient_data = validated_data.pop('ingredient')
-        validated_data['ingredient_id'] = ingredient_data['id']
-        return IngredientAmount.objects.create(**validated_data)
+    class Meta:
+        model = IngredientAmount
+        fields = ('id', 'name', 'measurement_unit', 'amount', 'ingredient')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=IngredientAmount.objects.all(),
+                fields=['ingredient', 'recipe']
+            )
+        ]
 
 
 class RecipeSerializer(serializers.ModelSerializer):
