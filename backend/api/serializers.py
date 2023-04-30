@@ -133,7 +133,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         current_user = self.context['request'].user
         tags_data = validated_data.pop('tags')
         ingredients_data = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(author=current_user, **validated_data)
+        recipe = Recipe.objects.create(**validated_data)#author=current_user,
         recipe.tags.set(tags_data)
         for ingredient_data in ingredients_data:
             IngredientAmount.objects.create(recipe=recipe, **ingredient_data)
