@@ -19,37 +19,22 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-# class IngredientAmountSerializer(serializers.ModelSerializer):
-#     # id = serializers.PrimaryKeyRelatedField(
-#     #     queryset=Ingredient.objects.all(),
-#     #     write_only=True,
-#     #     source='ingredient'
-#     # )
-#     # name = serializers.ReadOnlyField(source='ingredient.name')
-#     # measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
-#     id = serializers.ReadOnlyField(source='ingredient.id')
-#     name = serializers.ReadOnlyField(source='ingredient.name')
-#     measurement_unit = serializers.ReadOnlyField(
-#         source='ingredient.measurement_unit'
-#     )
-#
-#     class Meta:
-#         model = IngredientAmount
-#         fields = ('id', 'name', 'measurement_unit', 'amount', 'ingredient')
-#         validators = [
-#             UniqueTogetherValidator(
-#                 queryset=IngredientAmount.objects.all(),
-#                 fields=['ingredient', 'recipe']
-#             )
-#         ]
 class IngredientAmountSerializer(serializers.ModelSerializer):
+    # id = serializers.PrimaryKeyRelatedField(
+    #     queryset=Ingredient.objects.all(),
+    #     write_only=True,
+    #     source='ingredient'
+    # )
+    # name = serializers.ReadOnlyField(source='ingredient.name')
+    # measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
-    ingredient = IngredientSerializer()  # Добавляем это поле
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit'
+    )
 
     class Meta:
-        model = IngredientAmount
+        model =
         fields = ('id', 'name', 'measurement_unit', 'amount', 'ingredient')
         validators = [
             UniqueTogetherValidator(
@@ -59,13 +44,22 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         ]
 
 
+class CreateRecipeIngredientSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(write_only=True)
+    amount = serializers.IntegerField()
+
+    class Meta:
+        fields = ('id', 'amount')
+        model = IngredientAmount
+
+
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
     author = CustomUserSerializer(read_only=True)
-    ingredients = IngredientAmountSerializer(
-        source='ingredientamount_set',
+    ingredients = CreateRecipeIngredientSerializer(
         many=True,
+        write_only=True,
     )
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
