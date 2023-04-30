@@ -39,6 +39,8 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
             )
         ]
 
+    amount = serializers.DecimalField(max_digits=6, decimal_places=2)
+
 
 # class RecipeSerializer(serializers.ModelSerializer):
 #     image = Base64ImageField()
