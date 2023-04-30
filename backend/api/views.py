@@ -39,7 +39,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     pagination_class = LimitPageNumberPagination
     filter_class = AuthorAndTagFilter
-    permission_classes = [AllowAny] #IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly,
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
