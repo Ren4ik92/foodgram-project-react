@@ -19,19 +19,34 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+# class IngredientAmountSerializer(serializers.ModelSerializer):
+#     # id = serializers.PrimaryKeyRelatedField(
+#     #     queryset=Ingredient.objects.all(),
+#     #     write_only=True,
+#     #     source='ingredient'
+#     # )
+#     # name = serializers.ReadOnlyField(source='ingredient.name')
+#     # measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
+#     id = serializers.ReadOnlyField(source='ingredient.id')
+#     name = serializers.ReadOnlyField(source='ingredient.name')
+#     measurement_unit = serializers.ReadOnlyField(
+#         source='ingredient.measurement_unit'
+#     )
+#
+#     class Meta:
+#         model = IngredientAmount
+#         fields = ('id', 'name', 'measurement_unit', 'amount', 'ingredient')
+#         validators = [
+#             UniqueTogetherValidator(
+#                 queryset=IngredientAmount.objects.all(),
+#                 fields=['ingredient', 'recipe']
+#             )
+#         ]
 class IngredientAmountSerializer(serializers.ModelSerializer):
-    # id = serializers.PrimaryKeyRelatedField(
-    #     queryset=Ingredient.objects.all(),
-    #     write_only=True,
-    #     source='ingredient'
-    # )
-    # name = serializers.ReadOnlyField(source='ingredient.name')
-    # measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit'
-    )
+    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
+    ingredient = IngredientSerializer()  # Добавляем это поле
 
     class Meta:
         model = IngredientAmount
