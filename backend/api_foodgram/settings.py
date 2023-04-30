@@ -12,7 +12,7 @@ if os.path.isfile(dotenv_file):
 
 SECRET_KEY = os.environ.get('DJ_SECRET_KEY'),
 
-DEBUG = bool(strtobool(os.getenv('DEBUG', 'False')))
+DEBUG = True
 
 
 ALLOWED_HOSTS = ['*']
