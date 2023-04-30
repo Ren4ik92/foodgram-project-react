@@ -34,7 +34,7 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model =
+        model = IngredientAmount
         fields = ('id', 'name', 'measurement_unit', 'amount', 'ingredient')
         validators = [
             UniqueTogetherValidator(
@@ -57,9 +57,9 @@ class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
     author = CustomUserSerializer(read_only=True)
-    ingredients = CreateRecipeIngredientSerializer(
+    ingredients = IngredientAmountSerializer(
+        source='ingredientamount_set',
         many=True,
-        write_only=True,
     )
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
