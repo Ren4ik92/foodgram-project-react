@@ -6,7 +6,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 
@@ -42,17 +42,19 @@ class IngredientsViewSet(ReadOnlyModelViewSet):
     #
     #     def perform_create(self, serializer):
     #         serializer.save(author=self.request.user)
-    class RecipeViewset(ModelViewSet):
-        """
-        Эндпоинт ./recipes/
-        """
-        queryset = Recipe.objects.all()
-        serializer_class = RecipeSerializer
-        pagination_class = LimitPageNumberPagination
-        permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
-        def perform_update(self, serializer):
-            serializer.save(author=self.request.user)
+
+class RecipeViewSet(ModelViewSet):
+    """
+    Эндпоинт ./recipes/
+    """
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
+    pagination_class = LimitPageNumberPagination
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def perform_update(self, serializer):
+        serializer.save(author=self.request.user)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
