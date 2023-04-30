@@ -133,7 +133,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         current_user = self.context['request'].user
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(author=current_user, **validated_data)
+        author = validated_data.pop('author', None)
+        recipe = Recipe.objects.create(**validated_data, author=current_user)
         ingredient_counts = {}
         for ingredient in ingredients:
             ingredient_id = ingredient['id']
@@ -141,16 +142,13 @@ class RecipeSerializer(serializers.ModelSerializer):
             if ingredient_id in ingredient_counts:
                 ingredient_counts[ingredient_id] += amount
             else:
-                recipe_ingredient, created = (
-                    IngredientAmount.objects.get_or_create(
-                        recipe=recipe,
-                        ingredient_id=ingredient_id,
-                        defaults={'amount': amount},
-                    )
-                )
-                if not created:
-                    recipe_ingredient.amount += amount
-                    recipe_ingredient.save()
+                ingredient_counts[ingredient_id] = amount
+        for ingredient_id, amount in ingredient_counts.items():
+            IngredientAmount.objects.create(
+                recipe=recipe,
+                ingredient_id=ingredient_id,
+                amount=amount
+            )
         recipe.tags.set(tags)
         return recipe
 
