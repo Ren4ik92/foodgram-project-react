@@ -172,7 +172,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                 recipe_ingredient, created = (
                     Ingredient.objects.get_or_create(
                         recipe=recipe,
-                        ingredient_id=ingredient_id,
+                        ingredient=ingredient_id,
                         defaults={'amount': amount},
                     )
                 )
