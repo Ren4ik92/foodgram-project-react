@@ -160,7 +160,8 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         current_user = self.context['request'].user
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(**validated_data, author=current_user)
+        author = validated_data.pop('author', current_user)
+        recipe = Recipe.objects.create(author=author, **validated_data)
         ingredient_counts = {}
         for ingredient in ingredients:
             ingredient_id = ingredient['id']
