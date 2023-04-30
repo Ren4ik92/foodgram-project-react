@@ -20,26 +20,6 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-# class IngredientAmountSerializer(serializers.ModelSerializer):
-#     id = serializers.PrimaryKeyRelatedField(
-#         queryset=Ingredient.objects.all(),
-#         write_only=True,
-#         source='ingredient'
-#     )
-#     name = serializers.ReadOnlyField(source='ingredient.name')
-#     measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
-#
-#     class Meta:
-#         model = IngredientAmount
-#         fields = ('id', 'name', 'measurement_unit', 'amount')
-#         validators = [
-#             UniqueTogetherValidator(
-#                 queryset=IngredientAmount.objects.all(),
-#                 fields=['id', 'recipe']
-#             )
-#         ]
-
-
 class ReadRecipeIngredientSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name', read_only=True)
