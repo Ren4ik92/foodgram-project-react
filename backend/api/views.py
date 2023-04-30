@@ -8,7 +8,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 
 from api.filters import AuthorAndTagFilter, IngredientSearchFilter
 from api.models import (Cart, Favorite, Ingredient, IngredientAmount, Recipe,
@@ -33,16 +33,26 @@ class IngredientsViewSet(ReadOnlyModelViewSet):
     filter_backends = (IngredientSearchFilter,)
     search_fields = ('^name',)
 
+    # class RecipeViewSet(viewsets.ModelViewSet):
+    #     queryset = Recipe.objects.all()
+    #     serializer_class = RecipeSerializer
+    #     pagination_class = LimitPageNumberPagination
+    #     filter_class = AuthorAndTagFilter
+    #     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    #
+    #     def perform_create(self, serializer):
+    #         serializer.save(author=self.request.user)
+    class RecipeViewset(ModelViewSet):
+        """
+        Эндпоинт ./recipes/
+        """
+        queryset = Recipe.objects.all()
+        serializer_class = RecipeSerializer
+        pagination_class = LimitPageNumberPagination
+        permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
-class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
-    pagination_class = LimitPageNumberPagination
-    filter_class = AuthorAndTagFilter
-    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        def perform_update(self, serializer):
+            serializer.save(author=self.request.user)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
