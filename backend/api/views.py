@@ -33,27 +33,15 @@ class IngredientsViewSet(ReadOnlyModelViewSet):
     filter_backends = (IngredientSearchFilter,)
     search_fields = ('^name',)
 
-    # class RecipeViewSet(viewsets.ModelViewSet):
-    #     queryset = Recipe.objects.all()
-    #     serializer_class = RecipeSerializer
-    #     pagination_class = LimitPageNumberPagination
-    #     filter_class = AuthorAndTagFilter
-    #     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
-    #
-    #     def perform_create(self, serializer):
-    #         serializer.save(author=self.request.user)
 
-
-class RecipeViewSet(ModelViewSet):
-    """
-    Эндпоинт ./recipes/
-    """
+class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = LimitPageNumberPagination
+    filter_class = AuthorAndTagFilter
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
-    def perform_update(self, serializer):
+    def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
     @action(detail=True, methods=['post', 'delete'],
