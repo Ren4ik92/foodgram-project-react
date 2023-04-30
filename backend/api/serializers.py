@@ -41,13 +41,13 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
-    # tags = TagSerializer(many=True)
     tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
     author = CustomUserSerializer(read_only=True)
-    ingredients = IngredientAmountSerializer(
-        source='ingredientamount_set',
-        many=True,
-    )
+    # ingredients = IngredientAmountSerializer(
+    #     source='ingredientamount_set',
+    #     many=True,
+    # )
+    ingredients = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
