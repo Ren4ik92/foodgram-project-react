@@ -33,7 +33,7 @@ class ReadRecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class CreateRecipeIngredientSerializer(serializers.ModelSerializer):
-    ingredient = serializers.PrimaryKeyRelatedField(
+    id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(),
     )
     amount = serializers.IntegerField()
