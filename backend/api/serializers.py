@@ -74,22 +74,22 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         author = validated_data.pop('author', current_user)
         recipe = Recipe.objects.create(author=author, **validated_data)
         ingredient_counts = {}
+        ingredient_amounts = []
         for ingredient in ingredients:
             ingredient_id = ingredient['id']
             amount = ingredient['amount']
             if ingredient_id in ingredient_counts:
                 ingredient_counts[ingredient_id] += amount
             else:
-                recipe_ingredient, created = (
-                    IngredientAmount.objects.get_or_create(
+                ingredient_counts[ingredient_id] = amount
+                ingredient_amounts.append(
+                    IngredientAmount(
                         recipe=recipe,
-                        ingredient=ingredient_id,
-                        defaults={'amount': amount},
+                        ingredient_id=ingredient_id,
+                        amount=amount
                     )
                 )
-                if not created:
-                    recipe_ingredient.amount += amount
-                    recipe_ingredient.save()
+        IngredientAmount.objects.bulk_create(ingredient_amounts, ignore_conflicts=True)
         recipe.tags.set(tags)
         return recipe
 
