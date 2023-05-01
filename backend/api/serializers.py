@@ -42,7 +42,7 @@ class CreateRecipeIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'amount',)
         model = IngredientAmount
 
-
+#
 class CreateRecipeSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     image = Base64ImageField()
