@@ -29,7 +29,7 @@ class ReadRecipeIngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('id', 'name', 'measurement_unit', 'amount')
-        model = Ingredient
+        model = IngredientAmount
 
 
 class CreateRecipeIngredientSerializer(serializers.ModelSerializer):
@@ -81,7 +81,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                 ingredient_counts[ingredient_id] += amount
             else:
                 recipe_ingredient, created = (
-                    Ingredient.objects.get_or_create(
+                    IngredientAmount.objects.get_or_create(
                         recipe=recipe,
                         ingredient=ingredient_id,
                         defaults={'amount': amount},
@@ -116,7 +116,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             )
             for ingredient_id, amount in ingredient_counts.items()
         ]
-        Ingredient.objects.bulk_create(create_ingredients)
+        IngredientAmount.objects.bulk_create(create_ingredients)
         instance.save()
         return instance
 
