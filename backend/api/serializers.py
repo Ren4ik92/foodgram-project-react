@@ -39,7 +39,7 @@ class CreateRecipeIngredientSerializer(serializers.ModelSerializer):
     amount = serializers.IntegerField()
 
     class Meta:
-        fields = ('amount', 'ingredient')
+        fields = ('id', 'amount', 'ingredient',)
         model = IngredientAmount
 
 
