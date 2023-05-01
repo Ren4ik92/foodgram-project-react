@@ -76,7 +76,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         ingredient_counts = {}
         ingredient_amounts = []
         for ingredient in ingredients:
-            ingredient_id = ingredient['id']
+            ingredient_id = ingredient['id'].id
             amount = ingredient['amount']
             if ingredient_id in ingredient_counts:
                 ingredient_counts[ingredient_id] += amount
