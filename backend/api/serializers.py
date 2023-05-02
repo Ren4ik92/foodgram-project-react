@@ -22,6 +22,7 @@ class ReadRecipeIngredientSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source='ingredient.name', read_only=True)
     measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit', read_only=True)
+
     # amount = serializers.IntegerField()
 
     class Meta:
@@ -33,6 +34,7 @@ class CreateRecipeIngredientSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(),
     )
+
     # amount = serializers.IntegerField()
 
     class Meta:
@@ -156,6 +158,13 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         if not ingredients or len(ingredients) == 0:
             raise serializers.ValidationError(
                 'Рецепт должен содержать хотя бы один ингредиент!')
+        # if not tags or len(tags) == 0:
+        #     raise serializers.ValidationError(
+        #         'Рецепт должен содержать хотя бы один тег!')
+        return data
+
+    def validate_tag(self, data):
+        tags = data.get('tags')
         if not tags or len(tags) == 0:
             raise serializers.ValidationError(
                 'Рецепт должен содержать хотя бы один тег!')
