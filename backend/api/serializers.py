@@ -149,10 +149,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         if data.get('cooking_time') < 1:
             raise serializers.ValidationError(
                 'Время приготовления должно быть не меньше одной минуты!')
-        ingredients = data.get('ingredients')
-        if not ingredients or len(ingredients) == 0:
-            raise serializers.ValidationError(
-                'Рецепт должен содержать хотя бы один ингредиент!')
         return data
 
     def validate_tag(self, data):
@@ -160,6 +156,13 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         if not tags or len(tags) == 0:
             raise serializers.ValidationError(
                 'Рецепт должен содержать хотя бы один тег!')
+        return data
+
+    def validate_ingredient(self, data):
+        ingredients = data.get('ingredients')
+        if not ingredients or len(ingredients) == 0:
+            raise serializers.ValidationError(
+                'Рецепт должен содержать хотя бы один ингредиент!')
         return data
 
 
