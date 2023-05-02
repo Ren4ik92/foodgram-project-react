@@ -91,46 +91,12 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         recipe.tags.set(tags)
         return recipe
 
-    # def update(self, instance, validated_data):
-    #     tags = validated_data.pop('tags')
-    #     ingredients = validated_data.pop('ingredients')
-    #     instance = super().update(instance, validated_data)
-    #     instance.tags.clear()
-    #     instance.tags.set(tags)
-    #     instance.ingredient.clear()
-    #     ingredient_counts = {}
-    #     for ingredient in ingredients:
-    #         ingredient_id = ingredient['id']
-    #         amount = ingredient['amount']
-    #         if ingredient_id in ingredient_counts:
-    #             ingredient_counts[ingredient_id] += amount
-    #         else:
-    #             ingredient_counts[ingredient_id] = amount
-    #     create_ingredients = [
-    #         Ingredient(
-    #             recipe=instance,
-    #             ingredient_id=ingredient_id,
-    #             amount=amount
-    #         )
-    #         for ingredient_id, amount in ingredient_counts.items()
-    #     ]
-    #     IngredientAmount.objects.bulk_create(create_ingredients)
-    #     instance.save()
-    #     return instance
     def update(self, recipe, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        # instance = super().update(recipe, validated_data)
         recipe.tags.clear()
         recipe.tags.set(tags)
         recipe.ingredients.clear()
-        # for ingredient in ingredients:
-        #     ingredient_id = ingredient['id']
-        #     amount = ingredient['amount']
-        #     if ingredient_id in ingredient_counts:
-        #         ingredient_counts[ingredient_id] += amount
-        #     else:
-        #         ingredient_counts[ingredient_id] = amount
         create_ingredients = [
             IngredientAmount(
                 recipe=recipe,
@@ -146,9 +112,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return ReadRecipeSerializer(instance, context=self.context).data
 
     def validate(self, data):
-        if data.get('cooking_time') < 1:
-            raise serializers.ValidationError(
-                'Время приготовления должно быть не меньше одной минуты!')
+
         return data
 
     def validate_tag(self, data):
