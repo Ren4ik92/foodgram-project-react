@@ -73,20 +73,24 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(author=author, **validated_data)
         ingredient_counts = {}
         ingredient_amounts = []
+        ingredient_ids = set()
+        for ingredient in ingredients:
+            ingredient_id = ingredient['id'].id
+            if ingredient_id in ingredient_ids:
+                raise serializers.ValidationError('Каждый ингредиент должен присутствовать только один раз')
+            ingredient_ids.add(ingredient_id)
+
+        ingredient_amounts = []
         for ingredient in ingredients:
             ingredient_id = ingredient['id'].id
             amount = ingredient['amount']
-            if ingredient_id in ingredient_counts:
-                ingredient_counts[ingredient_id] += amount
-            else:
-                ingredient_counts[ingredient_id] = amount
-                ingredient_amounts.append(
-                    IngredientAmount(
-                        recipe=recipe,
-                        ingredient_id=ingredient_id,
-                        amount=amount
-                    )
+            ingredient_amounts.append(
+                IngredientAmount(
+                    recipe=recipe,
+                    ingredient_id=ingredient_id,
+                    amount=amount
                 )
+            )
         IngredientAmount.objects.bulk_create(ingredient_amounts, ignore_conflicts=True)
         recipe.tags.set(tags)
         return recipe
