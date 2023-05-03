@@ -128,7 +128,8 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             })
         ingredients_list = []
         for item in ingredients:
-            ingredient = get_object_or_404(Ingredient, id=item['id'])
+            ingredient_id = item['id']
+            ingredient = get_object_or_404(Ingredient, id=ingredient_id)
             if ingredient in ingredients_list:
                 raise serializers.ValidationError({
                     'ingredients': 'Ингридиенты не могут повторяться!'
