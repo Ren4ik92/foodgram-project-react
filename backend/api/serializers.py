@@ -1,4 +1,5 @@
 from drf_extra_fields.fields import Base64ImageField
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from api.models import Ingredient, IngredientAmount, Recipe, Tag, Cart, Favorite
 from users.models import Follow
@@ -120,20 +121,24 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return tags
 
     def validate_ingredients(self, data):
-        if not isinstance(data, dict):
-            data = data[0]
         ingredients = data.get('ingredients')
         if not ingredients or len(ingredients) == 0:
             raise serializers.ValidationError(
                 'Рецепт должен содержать хотя бы один ингредиент!')
-
-        ingredient_ids = set()
-        for ingredient in ingredients:
-            ingredient_id = ingredient['id'].id
-            if ingredient_id in ingredient_ids:
-                raise serializers.ValidationError('Каждый ингредиент должен присутствовать только один раз')
-            ingredient_ids.add(ingredient_id)
-
+        ingredient_list = []
+        for ingredient_item in ingredients:
+            ingredient = get_object_or_404(Ingredient,
+                                           id=ingredient_item['id'])
+            if ingredient in ingredient_list:
+                raise serializers.ValidationError('Ингридиенты должны '
+                                                  'быть уникальными')
+            ingredient_list.append(ingredient)
+            if int(ingredient_item['amount']) < 0:
+                raise serializers.ValidationError({
+                    'ingredients': ('Убедитесь, что значение количества '
+                                    'ингредиента больше 0')
+                })
+        data['ingredients'] = ingredients
         return data
 
 
