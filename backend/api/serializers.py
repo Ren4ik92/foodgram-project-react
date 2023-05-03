@@ -120,6 +120,8 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return tags
 
     def validate_ingredients(self, data):
+        if not isinstance(data, dict):
+            data = data[0]
         ingredients = data.get('ingredients')
         if not ingredients or len(ingredients) == 0:
             raise serializers.ValidationError(
@@ -127,9 +129,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
         ingredient_ids = set()
         for ingredient in ingredients:
-            ingredient_id = ingredient.get('id')
-            if not ingredient_id:
-                raise serializers.ValidationError('Идентификатор ингредиента должен быть указан')
+            ingredient_id = ingredient['id'].id
             if ingredient_id in ingredient_ids:
                 raise serializers.ValidationError('Каждый ингредиент должен присутствовать только один раз')
             ingredient_ids.add(ingredient_id)
