@@ -113,27 +113,26 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return ReadRecipeSerializer(instance, context=self.context).data
 
-    def validate_tags(self, validated_data):
-        tags = validated_data.pop('tags')
+    def validate_tags(self, tags):
         if not tags or len(tags) == 0:
             raise serializers.ValidationError(
                 'Рецепт должен содержать хотя бы один тег!')
-        return validated_data
+        return tags
 
-    def validate_ingredients(self, validated_data):
-        ingredients = validated_data.pop('ingredients')
-        if not ingredients or len(ingredients) == 0:
-            raise serializers.ValidationError(
-                'Рецепт должен содержать хотя бы один ингредиент!')
-
-        ingredient_ids = set()
-        for ingredient in ingredients:
-            ingredient_id = ingredient['id'].id
-            if ingredient_id in ingredient_ids:
-                raise serializers.ValidationError('Каждый ингредиент должен присутствовать только один раз')
-            ingredient_ids.add(ingredient_id)
-
-        return validated_data
+    # def validate_ingredients(self, data):
+    #     ingredients = data.get('ingredients')
+    #     if not ingredients or len(ingredients) == 0:
+    #         raise serializers.ValidationError(
+    #             'Рецепт должен содержать хотя бы один ингредиент!')
+    #
+    #     ingredient_ids = set()
+    #     for ingredient in ingredients:
+    #         ingredient_id = ingredient['id'].id
+    #         if ingredient_id in ingredient_ids:
+    #             raise serializers.ValidationError('Каждый ингредиент должен присутствовать только один раз')
+    #         ingredient_ids.add(ingredient_id)
+    #
+    #     return data
 
 
 class ReadRecipeSerializer(serializers.ModelSerializer):
