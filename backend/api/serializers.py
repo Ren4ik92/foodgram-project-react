@@ -136,8 +136,13 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
 
 class ReadRecipeSerializer(serializers.ModelSerializer):
+    # ingredients = ReadRecipeIngredientSerializer(
+    #     source='recipe_ingredients',
+    #     many=True,
+    #     read_only=True,
+    # )
     ingredients = ReadRecipeIngredientSerializer(
-        source='recipe_ingredients',
+        source='ingredientamount_set',
         many=True,
         read_only=True,
     )
