@@ -127,7 +127,9 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
         ingredient_ids = set()
         for ingredient in ingredients:
-            ingredient_id = ingredient['id'].id
+            ingredient_id = ingredient.get('id')
+            if not ingredient_id:
+                raise serializers.ValidationError('Идентификатор ингредиента должен быть указан')
             if ingredient_id in ingredient_ids:
                 raise serializers.ValidationError('Каждый ингредиент должен присутствовать только один раз')
             ingredient_ids.add(ingredient_id)
