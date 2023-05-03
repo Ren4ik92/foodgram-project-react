@@ -126,12 +126,12 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Рецепт должен содержать хотя бы один ингредиент!')
 
-        ingredient_ids = set()
-        for ingredient in ingredients:
-            ingredient_id = ingredient['id'].id
-            if ingredient_id in ingredient_ids:
-                raise serializers.ValidationError('Каждый ингредиент должен присутствовать только один раз')
-            ingredient_ids.add(ingredient_id)
+        # ingredient_ids = set()
+        # for ingredient in ingredients:
+        #     ingredient_id = ingredient['id'].id
+        #     if ingredient_id in ingredient_ids:
+        #         raise serializers.ValidationError('Каждый ингредиент должен присутствовать только один раз')
+        #     ingredient_ids.add(ingredient_id)
         return data
 
 
