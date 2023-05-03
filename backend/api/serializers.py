@@ -113,7 +113,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return ReadRecipeSerializer(instance, context=self.context).data
 
-    def validate_tag(self, data):
+    def validate_tags(self, data):
         tags = data.get('tags')
         if not tags or len(tags) == 0:
             raise serializers.ValidationError(
