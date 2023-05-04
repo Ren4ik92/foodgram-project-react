@@ -127,6 +127,10 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     'ingredients': 'Ингридиенты не могут повторяться!'
                 })
+            if int(item['amount']) <= 0:
+                raise serializers.ValidationError({
+                    'amount': 'Количество ингредиента должно быть больше 0!'
+                })
             ingredients_list.append(ingredient)
         return value
 
