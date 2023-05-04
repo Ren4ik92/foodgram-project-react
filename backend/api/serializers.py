@@ -119,19 +119,19 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 'ingredients': 'Нужен хотя бы один ингредиент!'
             })
-        ingredients_list = []
-        for item in ingredients:
-            ingredient_id = item['id'].id
-            ingredients_list = [item['id'].id for item in ingredients]
-            if len(ingredients_list) != len(set(ingredients_list)):
-                raise serializers.ValidationError({
-                    'ingredients': 'Ингридиенты не могут повторяться!'
-                })
-            if int(item['amount']) <= 0:
-                raise serializers.ValidationError({
-                    'amount': 'Количество ингредиента должно быть больше 0!'
-                })
-            # ingredients_list.append(ingredient)
+        ingredients_list = [item['id'].id for item in ingredients]
+        if len(ingredients_list) != len(set(ingredients_list)):
+            raise serializers.ValidationError({
+                'ingredients': 'Ингридиенты не могут повторяться!'
+            })
+        # ingredients_list = []
+        # # for item in ingredients:
+        #     # ingredient_id = item['id'].id
+        #     # if int(item['amount']) <= 0:
+        #     #     raise serializers.ValidationError({
+        #     #         'amount': 'Количество ингредиента должно быть больше 0!'
+        #     #     })
+        #     # ingredients_list.append(ingredient)
         return value
 
 
