@@ -122,8 +122,8 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         ingredients_list = []
         for item in ingredients:
             ingredient_id = item['id'].id
-            ingredient = get_object_or_404(Ingredient, id=ingredient_id)
-            if ingredient in ingredients_list:
+            ingredients_list = [item['id'].id for item in ingredients]
+            if len(ingredients_list) != len(set(ingredients_list)):
                 raise serializers.ValidationError({
                     'ingredients': 'Ингридиенты не могут повторяться!'
                 })
@@ -131,7 +131,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     'amount': 'Количество ингредиента должно быть больше 0!'
                 })
-            ingredients_list.append(ingredient)
+            # ingredients_list.append(ingredient)
         return value
 
 
